@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char * args[]) {
 
     int res = SDL_Init(SDL_INIT_VIDEO);
 
