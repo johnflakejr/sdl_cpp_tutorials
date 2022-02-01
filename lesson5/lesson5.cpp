@@ -5,17 +5,9 @@ using namespace std;
 
 SDL_Window * g_window = NULL;
 SDL_Surface * g_screen_surface = NULL;
-
-enum key_press_values {
-    KEY_PRESS_SURFACE_DEFAULT,
-    KEY_PRESS_SURFACE_UP,
-    KEY_PRESS_SURFACE_DOWN,
-    KEY_PRESS_SURFACE_LEFT,
-    KEY_PRESS_SURFACE_RIGHT,
-    KEY_PRESS_SURFACE_TOTAL
-};
-
-SDL_Surface * g_surfaces[KEY_PRESS_SURFACE_TOTAL];
+SDL_Surface * g_stretched = NULL;
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 bool initialize_sdl() {
 
@@ -51,6 +43,7 @@ bool initialize_sdl() {
 
 SDL_Surface * load_surface(std::string file_name) {
 
+    SDL_Surface * optimized = NULL;
     SDL_Surface * surface = SDL_LoadBMP(file_name.c_str());
 
     if (NULL == surface) {
@@ -58,31 +51,32 @@ SDL_Surface * load_surface(std::string file_name) {
         return NULL;
     }
 
-    return surface;
+    optimized = SDL_ConvertSurface(surface, g_screen_surface->format, 0);
+
+    if (NULL == optimized) {
+        cout << "ERROR: unable to optimize surface: " << SDL_GetError() << endl;
+    }
+
+    SDL_FreeSurface(surface);
+
+    return optimized;
 }
 
 bool load_media() {
     bool success = true;
 
-    string file_names[] = {"press.bmp", 
-                           "up.bmp", 
-                           "down.bmp", 
-                           "left.bmp", 
-                           "right.bmp"};
-
-    for (int i = 0; i < KEY_PRESS_SURFACE_TOTAL; i++) {
-        g_surfaces[i] = load_surface("assets/" + file_names[i]);
-
-        if (NULL == g_surfaces[i]) {
-            success = false;
-        }
-    }
+    g_stretched = load_surface("assets/stretch.bmp");
 
     return true;
 }
 
 void sdl_cleanup() {
-    //TODO clean and free surfaces
+    SDL_FreeSurface(g_screen_surface);
+    g_screen_surface = NULL;
+
+    SDL_FreeSurface(g_stretched);
+    g_stretched = NULL;
+
 	SDL_DestroyWindow(g_window);
     g_window = NULL;
 
@@ -93,7 +87,6 @@ void run() {
 
     bool quit = false;
     SDL_Event e;
-    SDL_Surface * current_surface = g_surfaces[KEY_PRESS_SURFACE_DEFAULT];
 
     while (!quit) {
         int event = 0;
@@ -102,29 +95,20 @@ void run() {
             event = SDL_PollEvent(&e);
             if (SDL_QUIT == e.type) {
                 quit = true;
-            } else if (SDL_KEYDOWN == e.type) {
-
-                switch (e.key.keysym.sym) {
-                    case SDLK_UP: 
-                        current_surface = g_surfaces[KEY_PRESS_SURFACE_UP];
-                        break;
-                    case SDLK_DOWN: 
-                        current_surface = g_surfaces[KEY_PRESS_SURFACE_DOWN];
-                        break;
-                    case SDLK_LEFT: 
-                        current_surface = g_surfaces[KEY_PRESS_SURFACE_LEFT];
-                        break;
-                    case SDLK_RIGHT: 
-                        current_surface = g_surfaces[KEY_PRESS_SURFACE_RIGHT];
-                        break;
-                    default: 
-                        current_surface = g_surfaces[KEY_PRESS_SURFACE_DEFAULT];
-                        break;
-                }
-            }
+            } 
         } while (event != 0);
 
-        SDL_BlitSurface(current_surface, NULL, g_screen_surface, NULL);
+
+        //Scale the image: 
+
+        SDL_Rect stretch_rect;
+        stretch_rect.x = 0;
+        stretch_rect.y = 0;
+        stretch_rect.w = SCREEN_WIDTH;
+        stretch_rect.h = SCREEN_HEIGHT;
+
+
+        SDL_BlitScaled(g_stretched, NULL, g_screen_surface, &stretch_rect);
         SDL_UpdateWindowSurface(g_window);
     }
 }
