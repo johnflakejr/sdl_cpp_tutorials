@@ -1,7 +1,7 @@
-all: lesson4
+all: lesson04
 
-lesson4: 
-	g++ lesson4.cpp -w -lSDL2 -o lesson4
+lesson04: 
+	g++ lesson04.cpp -w -lSDL2 -o lesson04
 
 clean: 
-	rm lesson4
+	rm lesson04
