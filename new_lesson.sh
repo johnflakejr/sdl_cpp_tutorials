@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Get the last lesson number.
-LAST=`find . -type d | grep 'lesson' | grep -o '[0-9][0-9]' | sort -u | tail -n 1`;
+LAST=`find . -type d | grep 'lesson' | grep -o '[0-9]*' | sort -u | tail -n 1`;
 let NEXT=LAST+1;
 
 echo "Creating directory for lesson $NEXT.";
