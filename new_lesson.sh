@@ -10,5 +10,5 @@ mkdir "lesson$NEXT";
 
 cp -r "./lesson$LAST/"* "./lesson$NEXT/";
 
-sed -i "s/$LAST/$NEXT/g" lesson$NEXT/makefile
+sed -i "s/$LAST/$NEXT/g" lesson$NEXT/CMakeLists.txt
 mv "lesson$NEXT/lesson$LAST.cpp" "lesson$NEXT/lesson$NEXT.cpp"
